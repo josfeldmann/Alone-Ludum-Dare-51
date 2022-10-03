@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "com.linuxsenpai.multitargetbuilder": "https://github.com/voldien/UMultiTargetBuilder.git#0.1.5",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.2d.tilemap": "1.0.0",
     "com.unity.2d.tilemap.extras": "2.2.3",

@@ -18,7 +18,7 @@ MonoBehaviour:
     company: 
     outputDirectory: Windows
     name: Windows
-    enabled: 0
+    enabled: 1
     useDefaultScenes: 1
     scenes: []
     targetGroup: 1
@@ -28,7 +28,7 @@ MonoBehaviour:
     company: 
     outputDirectory: Linux
     name: Linux
-    enabled: 0
+    enabled: 1
     useDefaultScenes: 1
     scenes: []
     targetGroup: 1
@@ -38,7 +38,7 @@ MonoBehaviour:
     company: 
     outputDirectory: OSX
     name: OSX
-    enabled: 0
+    enabled: 1
     useDefaultScenes: 1
     scenes: []
     targetGroup: 1

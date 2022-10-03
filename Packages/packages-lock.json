@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.linuxsenpai.multitargetbuilder": {
-      "version": "https://github.com/voldien/UMultiTargetBuilder.git#0.1.5",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "a21bd404b92922396eb19a020bed9dc3afadfc6e"
-    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
