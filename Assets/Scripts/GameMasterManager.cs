@@ -19,6 +19,7 @@ public class GameMasterManager : MonoBehaviour
     public WorldGenerator worldGenerator;
     public Camera cam;
     public CinemachineVirtualCamera vCam;
+    public AudioClip victoryClip, chaseClip;
 
     public void HideAll() {
         mainMenuEnv.SetActive(false);
@@ -55,6 +56,10 @@ public class GameMasterManager : MonoBehaviour
         machine.ChangeState(new PlayGameState());
     }
 
+    internal bool InMainMenu() {
+        return machine.currentState is MainMenuState || TopDownPlayerController.instance.statemachine.currentState is TopDownPlayerController.WinState;
+    }
+
     public void MainMenuButton() {
         machine.ChangeState(new MainMenuState());
     }
@@ -71,13 +76,23 @@ public class GameMasterManager : MonoBehaviour
     public class MainMenuState : State<GameMasterManager> {
 
         public override void Enter(StateMachine<GameMasterManager> obj) {
+            AudioManager.musicVolume = 0.25f;
+          //  AudioManager.instance.SetVolumes();
             obj.target.HideAll();
             obj.target.worldGenerator.gameObject.SetActive(false);
             obj.target.worldGenerator.ClearRooms();
             obj.target.mainMenuEnv.SetActive(true);
             obj.target.mainMenu.SetActive(true);
             obj.target.player.transform.position = obj.target.startPlayerPosition.position;
+            obj.target.MoveCameraTo(obj.target.startPlayerPosition.position);
+            AudioManager.PlayTrack(obj.target.victoryClip);
             obj.target.player.EnterDoNothingState();
+            obj.target.player.PlayIdle();
+        }
+
+        public override void Exit(StateMachine<GameMasterManager> obj) {
+            AudioManager.musicVolume = .75f;
+            //AudioManager.instance.SetVolumes();
         }
 
     }

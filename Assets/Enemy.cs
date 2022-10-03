@@ -18,12 +18,13 @@ public class Enemy : MonoBehaviour
     public float indirectMoveSpeed = 3;
     public float directMoveSpeed = 5;
     public Transform looker;
-    public ParticleSystem sleepSystem;
 
     public float waitTime = 1;
 
+    bool prevChase = false;
 
     public Animator anim;
+    public ParticleSystem sleepSystem;
 
     StateMachine<Enemy> machine;
 
@@ -50,6 +51,12 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    public void RemoveCheck() {
+        if (prevChase && TopDownPlayerController.currentlyChasingPlayer.Contains(this)) {
+            TopDownPlayerController.RemoveIfPresent(this);
+        }
+    }
+
     public class PatrolState : State<Enemy> {
 
         public float nextTimeChange;
@@ -60,12 +67,16 @@ public class Enemy : MonoBehaviour
             targetdirection = GetRandomDirection();
             obj.target.anim.Play(IDLE);
             nextTimeChange = Time.time + obj.target.waitTime;
+            obj.target.prevChase = false;
+            obj.target.sleepSystem.Stop();
             
         }
 
         public Vector3 GetRandomDirection() {
            return new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0).normalized;
         }
+
+
 
         public override void Update(StateMachine<Enemy> obj) {
 
@@ -81,13 +92,20 @@ public class Enemy : MonoBehaviour
                     obj.target.looker.transform.right = Vector3.MoveTowards(obj.target.looker.transform.right, (TopDownPlayerController.instance.transform.position - obj.target.transform.position).normalized, 4 * Time.deltaTime);
                     obj.target.anim.Play(RUNNING);
                     obj.target.rb.velocity = (TopDownPlayerController.instance.transform.position - obj.target.transform.position).normalized * obj.target.directMoveSpeed;
+                    if (obj.target.prevChase == false && !TopDownPlayerController.currentlyChasingPlayer.Contains(obj.target)) {
+                        TopDownPlayerController.AddIfNotPresent(obj.target);
+                    }
+                    obj.target.prevChase = true;
+                   
                 } else if (obj.target.isPlayerInRange() && (obj.target.isPlayerOnEdgeOfVision())) {
                     // Debug.Log("Indirect " + Time.time);
                     obj.target.looker.transform.right = Vector3.MoveTowards(obj.target.looker.transform.right, (TopDownPlayerController.instance.transform.position - obj.target.transform.position).normalized, 2 * Time.deltaTime);
                     obj.target.rb.velocity = (TopDownPlayerController.instance.transform.position - obj.target.transform.position).normalized * obj.target.indirectMoveSpeed;
                     obj.target.anim.Play(WALKING);
+                    obj.target.RemoveCheck();
+                    obj.target.prevChase = false;
                 } else {
-
+                    obj.target.RemoveCheck();
                     if (Time.time > nextTimeChange) {
                         if (targetdirection == Vector3.zero) {
                             targetdirection = GetRandomDirection();
@@ -103,7 +121,8 @@ public class Enemy : MonoBehaviour
                         obj.target.looker.transform.right = Vector3.MoveTowards(obj.target.looker.transform.right, obj.target.rb.velocity.normalized, 10 * Time.deltaTime);
                     }
                     obj.target.rb.velocity = targetdirection * obj.target.indirectMoveSpeed;
-                }
+                    obj.target.prevChase = false;
+            }
             
         }
     }
@@ -170,9 +189,15 @@ public class Enemy : MonoBehaviour
     public class SleepState : State<Enemy> {
 
         public override void Enter(StateMachine<Enemy> obj) {
+
             obj.target.anim.Play(SLEEPING);
             obj.target.rb.velocity = Vector2.zero;
             obj.target.rb.constraints = RigidbodyConstraints2D.FreezeAll;
+            obj.target.prevChase = true;
+            obj.target.RemoveCheck();
+            obj.target.prevChase = false;
+            obj.target.sleepSystem.Play();
+
         }
 
         public override void Exit(StateMachine<Enemy> obj) {

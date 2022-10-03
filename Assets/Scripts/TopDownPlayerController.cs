@@ -7,19 +7,51 @@ using UnityEngine.UI;
 public class TopDownPlayerController : MonoBehaviour
 {
 
-    public const string WALKINGANIMSTRING = "WALKING", IDLEANIMSTRING = "IDLE";
+
+    public AudioSource eatClip, deathClip;
+
+    public static List<Enemy> currentlyChasingPlayer = new List<Enemy>();
+
+    public static void RemoveIfPresent(Enemy e) {
+        if (currentlyChasingPlayer.Contains(e)) {
+            currentlyChasingPlayer.Remove(e);
+            NumberChasingPlayerChange();
+        }
+    }
+
+    public static void AddIfNotPresent(Enemy e) {
+        if (!currentlyChasingPlayer.Contains(e)) {
+            currentlyChasingPlayer.Add(e);
+            NumberChasingPlayerChange();
+        }
+    }
+
+    public static void NumberChasingPlayerChange() {
+        if (currentlyChasingPlayer.Count == 0) {
+            GameMasterManager.instance.dayController.MusicCheck();
+        } else if (AudioManager.instance.currentAudioSource.source.clip != GameMasterManager.instance.chaseClip) {
+            AudioManager.PlayTrack(GameMasterManager.instance.chaseClip);
+        }
+    }
+
+
+    public const string WALKINGANIMSTRING = "WALKING", IDLEANIMSTRING = "IDLE", DEATH = "DEATH";
 
     public static TopDownPlayerController instance;
     public GameMasterManager manager;
     public InputManager input;
     public Transform lookTransform;
     public Rigidbody2D rb;
+    public bool isDead;
+    public Collider2D bodycollider;
 
     internal bool IsInKillableState() {
         if (Time.timeScale == 0) return false;
         if (statemachine.currentState is IdleState || statemachine.currentState is WalkState) return true;
         return false;
     }
+
+    
 
     internal void Kill() {
         statemachine.ChangeState(new LoseState());
@@ -36,6 +68,7 @@ public class TopDownPlayerController : MonoBehaviour
         currentHungerAmount = Mathf.Min(maxHungerAmount, currentHungerAmount);
         hungerBar.fillAmount = currentHungerAmount / maxHungerAmount;
         hungerBar.color = GetHungerColor();
+        eatClip.Play();
     }
 
     public bool hasKey = false;
@@ -52,7 +85,9 @@ public class TopDownPlayerController : MonoBehaviour
 
     public StateMachine<TopDownPlayerController> statemachine;
 
-
+    public void PlayIdle() {
+        anim.Play(IDLEANIMSTRING);
+    }
 
     public Color fullHunger = Color.green, midHunger = Color.yellow, lowHunger = Color.red;
 
@@ -165,26 +200,35 @@ public class TopDownPlayerController : MonoBehaviour
     public class LoseState : State<TopDownPlayerController> {
         public override void Enter(StateMachine<TopDownPlayerController> obj) {
             obj.target.StopWalking();
+            obj.target.deathClip.Play();
             obj.target.FreezeMovement();
             obj.target.manager.EnterLoseState();
+            obj.target.anim.Play(DEATH);
         }
     }
 
     public void UnFreezeMovement() {
         rb.isKinematic = false;
+        bodycollider.enabled = true;
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
     }
 
     public void FreezeMovement() {
         rb.velocity = Vector2.zero;
+        bodycollider.enabled = false;
         rb.isKinematic = true;
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
     }
     public class WinState : State<TopDownPlayerController> {
+
+
+
         public override void Enter(StateMachine<TopDownPlayerController> obj) {
             obj.target.StopWalking();
             obj.target.FreezeMovement();
             obj.target.manager.EnterWinState();
+            AudioManager.PlayTrack(GameMasterManager.instance.victoryClip);
+            
         }
     }
 

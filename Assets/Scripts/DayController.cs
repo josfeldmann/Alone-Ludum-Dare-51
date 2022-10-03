@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -11,8 +12,26 @@ public class DayController : MonoBehaviour
 
     public bool isDay;
 
+    public AudioClip dayClip;
+    public AudioClip nightClip;
+
     public float dayNightTime;
     public Color dayColor = Color.white;
+
+
+    public float GetSeconds() {
+        return (Time.time - startTime) % 10;
+    }
+
+    internal void MusicCheck() {
+        if (isDay) {
+            if (!GameMasterManager.instance.InMainMenu()) AudioManager.PlayTrack(dayClip);
+        } else {
+            if (!GameMasterManager.instance.InMainMenu()) AudioManager.PlayTrack(nightClip);
+        }
+        AudioManager.instance.currentAudioSource.source.time = GetSeconds() % AudioManager.instance.currentAudioSource.source.clip.length;
+    }
+
     public Color nightColor = Color.black;
     public Light2D globalLight;
 
@@ -48,11 +67,18 @@ public class DayController : MonoBehaviour
         outerPlayerLight.intensity = 0;
         currentInnerTargetFlicker = innerLightRadius;
         currentOuterTargetFlicker = outerLightRadius;
+       if (!GameMasterManager.instance.InMainMenu()) AudioManager.PlayTrack(dayClip);
     }
+
+    bool prevDay;
 
     public void DayCheck() {
         currentTime = Time.time - startTime;
         isDay = currentTime % (2 * dayNightTime) <= dayNightTime;
+        if (isDay != prevDay) {
+            MusicCheck();
+        }
+        prevDay = isDay;
     }
 
     float lerpamount;

@@ -6,12 +6,13 @@ public class Key : MonoBehaviour
 {
     public LayerMask pickUpLayer;
     public float scaleSpeed;
-
+    public AudioSource keySource;
     private void OnTriggerEnter2D(Collider2D collision) {
         if (Layers.InLayerMask(pickUpLayer, collision.gameObject.layer)) {
             TopDownPlayerController t = collision.gameObject.GetComponent<TopDownPlayerController>();
             if (!t.hasKey) {
                 t.hasKey = true;
+                keySource.Play();
                 ScaleDown();
             }
 
