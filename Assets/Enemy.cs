@@ -19,17 +19,25 @@ public class Enemy : MonoBehaviour
     public float directMoveSpeed = 5;
     public Transform looker;
 
-    public float waitTime = 1;
+    public Vector2 waitTime = new Vector2(0.5f,1.5f);
 
     bool prevChase = false;
-
+    public LayerMask obstacleLayer;
+    public float checkDistance =  1.2f;
+    public List<float> anglesToCheck = new List<float>();
     public Animator anim;
+    public SpriteRenderer srenderer;
     public ParticleSystem sleepSystem;
 
     StateMachine<Enemy> machine;
-
+    public bool randomizeOnStart = false;
     private void Awake() {
+        
         machine = new StateMachine<Enemy>(new PatrolState(), this);
+    }
+
+    private void Start() {
+        if (randomizeOnStart) RandomizeColors();
     }
 
     private void Update() {
@@ -51,6 +59,36 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter2D(Collision2D collision) {
+        if (prevChase) return;
+        if ( Layers.InLayerMask(obstacleLayer,collision.gameObject.layer)) {
+            targetdirection = GetBestDirection();
+        }
+    }
+    public Vector3 targetdirection;
+
+    
+
+    public Vector3 GetBestDirection() {
+
+        Vector3 averageDir = new Vector3();
+        int amt = 0;
+
+        foreach (float f in anglesToCheck) {
+            Vector3 check = Quaternion.Euler(0, 0, f) * targetdirection;
+            if (Physics2D.Raycast(transform.position, check, checkDistance, obstacleLayer)) {
+                averageDir -= check;
+                amt++;
+            }
+        }
+
+        
+
+        return (averageDir/amt).normalized;
+
+    }
+
+
     public void RemoveCheck() {
         if (prevChase && TopDownPlayerController.currentlyChasingPlayer.Contains(this)) {
             TopDownPlayerController.RemoveIfPresent(this);
@@ -60,13 +98,13 @@ public class Enemy : MonoBehaviour
     public class PatrolState : State<Enemy> {
 
         public float nextTimeChange;
-        public Vector3 targetdirection;
+        
 
         
         public override void Enter(StateMachine<Enemy> obj) {
-            targetdirection = GetRandomDirection();
+            obj.target.targetdirection = GetRandomDirection();
             obj.target.anim.Play(IDLE);
-            nextTimeChange = Time.time + obj.target.waitTime;
+            nextTimeChange = Time.time + Random.Range(obj.target.waitTime.x, obj.target.waitTime.y);
             obj.target.prevChase = false;
             obj.target.sleepSystem.Stop();
             
@@ -95,6 +133,7 @@ public class Enemy : MonoBehaviour
                     if (obj.target.prevChase == false && !TopDownPlayerController.currentlyChasingPlayer.Contains(obj.target)) {
                         TopDownPlayerController.AddIfNotPresent(obj.target);
                     }
+                obj.target.targetdirection = obj.target.looker.transform.right;
                     obj.target.prevChase = true;
                    
                 } else if (obj.target.isPlayerInRange() && (obj.target.isPlayerOnEdgeOfVision())) {
@@ -103,27 +142,40 @@ public class Enemy : MonoBehaviour
                     obj.target.rb.velocity = (TopDownPlayerController.instance.transform.position - obj.target.transform.position).normalized * obj.target.indirectMoveSpeed;
                     obj.target.anim.Play(WALKING);
                     obj.target.RemoveCheck();
+                obj.target.targetdirection = obj.target.looker.transform.right;
                     obj.target.prevChase = false;
                 } else {
                     obj.target.RemoveCheck();
                     if (Time.time > nextTimeChange) {
-                        if (targetdirection == Vector3.zero) {
-                            targetdirection = GetRandomDirection();
+                        if (obj.target.targetdirection == Vector3.zero) {
+                        obj.target.targetdirection = GetRandomDirection();
                             nextTimeChange = Time.time + Random.Range(obj.target.moveTimeRange.x, obj.target.moveTimeRange.y);
                             obj.target.anim.Play(WALKING);
                         } else {
-                            targetdirection = Vector2.zero;
+                        obj.target.targetdirection = Vector2.zero;
                             nextTimeChange = Time.time + Random.Range(obj.target.waitTimeRange.x, obj.target.waitTimeRange.y);
                             obj.target.anim.Play(IDLE);
                         }
                     }
-                    if (targetdirection != Vector3.zero) {
+                    if (obj.target.targetdirection != Vector3.zero) {
                         obj.target.looker.transform.right = Vector3.MoveTowards(obj.target.looker.transform.right, obj.target.rb.velocity.normalized, 10 * Time.deltaTime);
                     }
-                    obj.target.rb.velocity = targetdirection * obj.target.indirectMoveSpeed;
+                    obj.target.rb.velocity = obj.target.targetdirection * obj.target.indirectMoveSpeed;
                     obj.target.prevChase = false;
             }
             
+        }
+    }
+
+    public void RandomizeColors() {
+
+        if (Random.Range(0, 1f) > 0.66f) {
+            anim.runtimeAnimatorController = GameMasterManager.instance.worldGenerator.golemAnimator;
+            srenderer.material = GameMasterManager.instance.worldGenerator.golemMaterial;
+        } else {
+
+            srenderer.material.SetColor("_NewSpotColor", GameMasterManager.instance.worldGenerator.GetNewColor());
+            srenderer.material.SetColor("_NewSkinColor", GameMasterManager.instance.worldGenerator.GetNewColor());
         }
     }
 

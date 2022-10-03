@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0306f5d838fb9344fb975bb744d30096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  foodAmount: 25
+  foodAmount: 50
   feedLayer:
     serializedVersion: 2
     m_Bits: 64

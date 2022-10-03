@@ -13,11 +13,38 @@ public class WorldGenerator : MonoBehaviour
     public BoxCollider2D confiner;
     public BoxCollider2D leftWall, rightWall, upwall, downWall;
     public List<GameObject> obstacles = new List<GameObject>();
+    public GameObject holeGameObject;
     public List<Food> foodPrefabs = new List<Food>();
     public Enemy enemyPrefab;
 
     public int numberOfEnemiesPerRoom = 1;
     public int numberOfFoodPerRoom = 1;
+
+    public RuntimeAnimatorController golemAnimator;
+    public Material golemMaterial;
+
+    public List<Color> Colors = new List<Color>();
+    public int currentColorIndex;
+
+    public Vector2Int holeRange = new Vector2Int(0,5);
+
+
+    public SliderVal sizeSlider, enemySlider, hungerSlider;
+
+
+    public Color GetNewColor() {
+
+        Color c = Colors[currentColorIndex];
+        currentColorIndex++;
+        if (currentColorIndex >= Colors.Count) {
+            Colors.Shuffle();
+            currentColorIndex = 0;
+        }
+        return c;
+
+    }
+
+
 
 
 
@@ -36,6 +63,14 @@ public class WorldGenerator : MonoBehaviour
 
     public void GenerateRooms() {
 
+        TopDownPlayerController.instance.hungerDecreasePerSecond = hungerSlider.GetValue();
+        numberOfEnemiesPerRoom = (int)enemySlider.GetValue();
+        size = new Vector2Int((int)sizeSlider.GetValue(), (int)sizeSlider.GetValue());
+
+
+        Colors.Shuffle();
+        currentColorIndex = 0;
+
         ClearRooms();
         List<Room> rooms = new List<Room>(roomPrefab);
         rooms.Shuffle();
@@ -46,6 +81,18 @@ public class WorldGenerator : MonoBehaviour
             for (int y = 0; y < size.y; y++) {
                 Room r = Instantiate(rooms[0], transform);
                 r.transform.localPosition = new Vector3(x * roomWidth, y * roomHeight, 0);
+
+                if (UnityEngine.Random.Range(0f,1f) > 0.5f) {
+                    float roll = UnityEngine.Random.Range(0f, 1f);
+                    if (roll < 0.33f) {
+                        r.transform.localScale = new Vector3(-1, 1, 1);
+                    } else if (roll < 0.66f) {
+                        r.transform.localScale = new Vector3(1, -1, 1);
+                    } else {
+                        r.transform.localScale = new Vector3(-1, -1, 1);
+                    }
+                }
+
                 roomGrid[x, y] = r;
                 rooms.RemoveAt(0);
                 if (rooms.Count == 0) {

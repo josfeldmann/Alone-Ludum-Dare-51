@@ -28,10 +28,11 @@ public class Food : MonoBehaviour
 
 
     public IEnumerator ScaleUpNum() {
+        Vector3 goalVector = transform.localScale;
         transform.localScale = Vector3.zero;
         yield return null;
-        while (transform.localScale != Vector3.one) {
-            transform.localScale = Vector3.MoveTowards(transform.localScale, Vector3.one, Time.deltaTime * scalespeed);
+        while (transform.localScale != goalVector) {
+            transform.localScale = Vector3.MoveTowards(transform.localScale, goalVector, Time.deltaTime * scalespeed);
             yield return null;
         }
     }

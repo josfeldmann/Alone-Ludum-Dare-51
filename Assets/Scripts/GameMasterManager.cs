@@ -20,6 +20,7 @@ public class GameMasterManager : MonoBehaviour
     public Camera cam;
     public CinemachineVirtualCamera vCam;
     public AudioClip victoryClip, chaseClip;
+    public GameObject howToPlayMenu;
 
     public void HideAll() {
         mainMenuEnv.SetActive(false);
@@ -29,6 +30,10 @@ public class GameMasterManager : MonoBehaviour
         loseMenu.gameObject.SetActive(false);
         player.hungerBarParent.gameObject.SetActive(false);
 
+    }
+
+    public void ShowHowToPlayMenu(bool b) {
+        howToPlayMenu.SetActive(b);
     }
 
 
@@ -87,6 +92,7 @@ public class GameMasterManager : MonoBehaviour
             obj.target.MoveCameraTo(obj.target.startPlayerPosition.position);
             AudioManager.PlayTrack(obj.target.victoryClip);
             obj.target.player.EnterDoNothingState();
+            obj.target.howToPlayMenu.gameObject.SetActive(false);
             obj.target.player.PlayIdle();
         }
 

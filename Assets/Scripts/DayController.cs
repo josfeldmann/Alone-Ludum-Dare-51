@@ -57,7 +57,7 @@ public class DayController : MonoBehaviour
         ResetTime();
     }
 
-    float startTime;
+    public float startTime;
     float currentTime;
 
     public void ResetTime() {

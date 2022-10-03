@@ -53,8 +53,8 @@ public class TopDownPlayerController : MonoBehaviour
 
     
 
-    internal void Kill() {
-        statemachine.ChangeState(new LoseState());
+    internal void Kill(bool isHole) {
+        statemachine.ChangeState(new LoseState(isHole));
     }
 
     public Animator anim;
@@ -96,7 +96,7 @@ public class TopDownPlayerController : MonoBehaviour
         hungerBar.fillAmount = currentHungerAmount / maxHungerAmount;
         hungerBar.color = Color.LerpUnclamped(hungerBar.color, GetHungerColor(), 0.75f * Time.deltaTime);
         if (currentHungerAmount < 0) {
-            statemachine.ChangeState(new LoseState());
+            statemachine.ChangeState(new LoseState(false));
         }
     }
 
@@ -198,12 +198,31 @@ public class TopDownPlayerController : MonoBehaviour
     }
 
     public class LoseState : State<TopDownPlayerController> {
+        private bool isHole;
+
+        public LoseState(bool isHole) {
+            this.isHole = isHole;
+        }
+
         public override void Enter(StateMachine<TopDownPlayerController> obj) {
             obj.target.StopWalking();
             obj.target.deathClip.Play();
             obj.target.FreezeMovement();
             obj.target.manager.EnterLoseState();
             obj.target.anim.Play(DEATH);
+
+        }
+
+
+        public override void Update(StateMachine<TopDownPlayerController> obj) {
+            if (isHole && (obj.target.transform.localScale != Vector3.zero || KillBox.killHole.position != obj.target.transform.position) ) {
+                obj.target.transform.localScale = Vector3.MoveTowards(obj.target.transform.localScale, Vector3.zero, 3 * Time.deltaTime);
+                obj.target.transform.position = Vector3.MoveTowards(obj.target.transform.position, KillBox.killHole.position, 2 *  Time.deltaTime);
+            }
+        }
+
+        public override void Exit(StateMachine<TopDownPlayerController> obj) {
+            obj.target.transform.localScale = Vector3.one;
         }
     }
 

@@ -104,6 +104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de8303db4fc995547a4ecbbf1715411c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isHole: 0
   mask:
     serializedVersion: 2
     m_Bits: 64
@@ -166,8 +167,18 @@ MonoBehaviour:
   directMoveSpeed: 6
   looker: {fileID: 654967781357404482}
   waitTime: 1
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  checkDistance: 1
+  anglesToCheck:
+  - 0
+  - 45
+  - -45
   anim: {fileID: 654967782617873806}
+  srenderer: {fileID: 654967782617873805}
   sleepSystem: {fileID: 3421613098761412428}
+  targetdirection: {x: 0, y: 0, z: 0}
   maskToLookForPlayerOn:
     serializedVersion: 2
     m_Bits: 65
@@ -358,7 +369,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: f71fd27a57551fd4e8358806122cb627, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

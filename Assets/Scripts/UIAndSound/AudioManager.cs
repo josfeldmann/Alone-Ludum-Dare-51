@@ -25,9 +25,7 @@ public class AudioManager : MonoBehaviour
             transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
         } else {
-            if (this != instance) {
-                Destroy(gameObject);
-            }
+            
         }
         
             Initialize();
@@ -99,8 +97,7 @@ public class AudioManager : MonoBehaviour
             currentAudioSource.SetVolume(musicVolume);
             currentAudioSource.source.Play();
             return;
-        } else if (currentAudioSource.source.clip == c) {
-            return;
+        
         } else {
             StartCoroutine(SwitchTracks(c));
         }

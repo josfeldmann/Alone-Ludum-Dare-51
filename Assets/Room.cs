@@ -42,20 +42,26 @@ public class Room : MonoBehaviour {
             Transform t = obstaclePoints[0];
             obstaclePoints.RemoveAt(0);
             gen.MovePlayerToPoint(t.position);
-        }
-
-
-        if (ROOMTYPE == RoomType.VAULT) {
+        } else if (ROOMTYPE == RoomType.VAULT) {
             Transform t = obstaclePoints[0];
             obstaclePoints.RemoveAt(0);
             GameMasterManager.instance.vault.transform.position = t.position;
-        }
-
-        if (ROOMTYPE == RoomType.KEY) {
+        } else if (ROOMTYPE == RoomType.KEY) {
             Transform t = obstaclePoints[0];
             obstaclePoints.RemoveAt(0);
             GameMasterManager.instance.key.transform.position = t.position;
+        } else {
+            int numberOfholes = Random.Range(gen.holeRange.x, gen.holeRange.y + 1);
+            while (numberOfholes > 0 && obstaclePoints.Count > 0) {
+                Transform t = obstaclePoints[0];
+                obstaclePoints.RemoveAt(0);
+                Instantiate(GameMasterManager.instance.worldGenerator.holeGameObject, t.position, Quaternion.Euler(0, 0, Random.Range(0f, 360f)), transform);
+                numberOfholes--;
+            }
+            
         }
+
+
 
         foreach (Transform t in obstaclePoints) {
             GameObject g = gen.obstacles.PickRandom();
@@ -68,6 +74,8 @@ public class Room : MonoBehaviour {
             for (int i = 0; i < gen.numberOfEnemiesPerRoom; i++) {
                 Transform t = enemyPoints[0];
                 Enemy e = Instantiate(gen.enemyPrefab, t.position, t.rotation, transform);
+                e.RandomizeColors();
+                e.looker.localScale = transform.localScale;
                 enemyPoints.RemoveAt(0);
                 if (enemyPoints.Count == 0) i = gen.numberOfEnemiesPerRoom;
             }
@@ -77,6 +85,7 @@ public class Room : MonoBehaviour {
         for (int i = 0; i < gen.numberOfFoodPerRoom; i++) {
             Transform t = foodPoints[0];
             Food e = Instantiate(gen.foodPrefabs.PickRandom(), t.position, t.rotation, transform);
+            e.transform.localScale = transform.localScale;
             foodPoints.RemoveAt(0);
             if (foodPoints.Count == 0) i = gen.numberOfEnemiesPerRoom;
         }
