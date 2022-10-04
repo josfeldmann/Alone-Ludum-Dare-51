@@ -67,7 +67,7 @@ public class DayController : MonoBehaviour
         outerPlayerLight.intensity = 0;
         currentInnerTargetFlicker = innerLightRadius;
         currentOuterTargetFlicker = outerLightRadius;
-       if (!GameMasterManager.instance.InMainMenu()) AudioManager.PlayTrack(dayClip);
+       //if (!GameMasterManager.instance.InMainMenu()) AudioManager.PlayTrack(dayClip);
     }
 
     bool prevDay;

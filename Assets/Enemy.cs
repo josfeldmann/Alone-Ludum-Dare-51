@@ -31,6 +31,7 @@ public class Enemy : MonoBehaviour
 
     StateMachine<Enemy> machine;
     public bool randomizeOnStart = false;
+    public bool canBeGolem = true;
     private void Awake() {
         
         machine = new StateMachine<Enemy>(new PatrolState(), this);
@@ -169,7 +170,7 @@ public class Enemy : MonoBehaviour
 
     public void RandomizeColors() {
 
-        if (Random.Range(0, 1f) > 0.66f) {
+        if (Random.Range(0, 1f) > 0.66f && canBeGolem) {
             anim.runtimeAnimatorController = GameMasterManager.instance.worldGenerator.golemAnimator;
             srenderer.material = GameMasterManager.instance.worldGenerator.golemMaterial;
         } else {
